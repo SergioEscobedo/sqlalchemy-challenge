@@ -45,35 +45,33 @@ def home():
 
 @app.route('/api/v1.0/precipitation')
 def precipitation():
-    # Calculate the date one year ago from the last date in the dataset
+   
     last_date = session.query(Measurement.date).order_by(Measurement.date.desc()).first()[0]
     one_year_ago = (dt.datetime.strptime(last_date, '%Y-%m-%d') - dt.timedelta(days=365)).date()
-    
-    # Query to get precipitation data for the last 12 months
+
     prcp_data = session.query(Measurement.date, Measurement.prcp).\
                 filter(Measurement.date >= one_year_ago).all()
     
-    # Convert the query results to a dictionary
     prcp_dict = {date: prcp for date, prcp in prcp_data}
     
     return jsonify(prcp_dict)
 
 @app.route('/api/v1.0/stations')
 def stations():
-    # Query all station names
+    
     station_names = session.query(Station.station).all()
-    station_list = list(np.ravel(station_names))  # Convert to a flat list
+    station_list = list(np.ravel(station_names))  
     
     return jsonify(station_list)
 
 @app.route('/api/v1.0/tobs')
 def tobs():
-    # Calculate the date one year ago from the last date in the dataset
+    
     last_date = session.query(Measurement.date).order_by(Measurement.date.desc()).first()[0]
     one_year_ago = (dt.datetime.strptime(last_date, '%Y-%m-%d') - dt.timedelta(days=365)).date()
     
-    # Query temperature observations for the most active station for the last 12 months
-    most_active_station_id = "USC00519281"  # Replace with the actual most active station id
+
+    most_active_station_id = "USC00519281"  
     temp_data = session.query(Measurement.date, Measurement.tobs).\
                 filter(Measurement.station == most_active_station_id, Measurement.date >= one_year_ago).all()
     
@@ -87,7 +85,6 @@ def temp_summary(start, end=None):
     if not end:
         end = session.query(Measurement.date).order_by(Measurement.date.desc()).first()[0]
     
-    # Query to calculate TMIN, TAVG, and TMAX for the specified date range
     temp_summary_data = session.query(func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).\
                         filter(Measurement.date.between(start, end)).all()
     
